@@ -2,43 +2,53 @@ const { execSync } = require('node:child_process');
 
 const { assert } = require('chai');
 
+const simpleJsStrings = [
+  './something',
+  'a string',
+  'a',
+  'b',
+  'c',
+  'astring',
+];
+
 describe('get-strings', () => {
-  it('should extract strings from a .js file', () => {
-    // given
-    const actual = get_strings('./test/examples/simple.js');
+  describe('output format: null-terminated strings', () => {
+    it('should extract strings from a .js file', () => {
+      // when
+      const actual = execSync(`npx . ./test/examples/simple.js`)
+          .toString()
+          .split('\0');
 
-    // expect
-    assert.deepEqual(
-      actual,
-      [
-        'some expected',
-        'strings',
-        '"could"',
-        'go here',
-      ],
-    );
+      // expect
+      assert.deepEqual(actual, simpleJsStrings);
+    });
   });
-  
-  it('should extract strings from a .coffee file', () => {
-    // given
-    const actual = get_strings('./test/examples/simple.coffee');
 
-    // expect
-    assert.deepEqual(
-      actual,
-      [
-        'some expected',
-        'strings',
-        '"could"',
-        'go here',
-      ],
-    );
+  describe('output format: JSON', () => {
+    it('should extract strings from a .js file', () => {
+      // when
+      const actual = JSON.parse(execSync(`npx . --json ./test/examples/simple.js`).toString());
+
+      // expect
+      assert.deepEqual(actual, simpleJsStrings);
+    });
+  });
+
+  it('should provide helpful usage instructions for a .coffee file', () => {
+    try {
+      // when
+      execSync('npx . ./test/examples/non-existent.coffee');
+
+      assert.fail('should have returned non-zero exit code');
+    } catch(err) {
+      // expect
+      assert.equal(err.stdout.toString(), `
+Failed with file: ./test/examples/non-existent.coffee
+
+.coffee not supported; try:
+
+  get-strings <(npx coffee -c "./test/examples/non-existent.coffee")
+`);
+    }
   });
 });
-
-function get_strings(...files) {
-  return execSync([
-    'npx .',
-    ...files,
-  ].join(' '));
-}
