@@ -7,15 +7,7 @@ log() { echo >&2 "[release] $*"; }
 # TODO check up-to-date with remote repo
 
 log "Bumping version number..."
-npm version minor
-
-log "Committing changes..."
-git add package.json
-newVersion="$(jq .version package.json)"
-git commit -m"Bumped version to $newVersion"
-
-log "Tagging release..."
-git tag "v$newVersion"
+npm version minor -m "Bumped version to $newVersion"
 
 log "Pushing to git..."
 git push --tags
