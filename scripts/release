@@ -4,7 +4,6 @@ set -o pipefail
 log() { echo >&2 "[release] $*"; }
 
 # TODO check on master branch
-# TODO check working copy clean
 # TODO check up-to-date with remote repo
 
 npm version minor
