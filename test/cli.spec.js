@@ -20,6 +20,23 @@ describe('get-strings', () => {
     execSync(`npx --yes . ${__filename}`);
   });
 
+  describe('usage message', () => {
+    it('--help should output usage message', () => {
+      // expect
+      assert.match(execSync(`npx . --help`).toString(), /^NAME\n/);
+    });
+    it('--usage should output usage message', () => {
+      // expect
+      assert.match(execSync(`npx . --help`).toString(), /^NAME\n/);
+    });
+    it('no args should output usage message and exit 1', () => {
+      // expect
+      const err = assert.throws(() => execSync(`npx .`));
+      // and
+      assert.match(err.stdout.toString(), /^NAME\n/);
+    });
+  });
+
   describe('output format: null-terminated strings', () => {
     it('should extract strings from a .js file', () => {
       // when
