@@ -1,5 +1,20 @@
 #!/usr/bin/env node
 
+function usage(exitCode) {
+  console.log(`NAME
+\tget-strings - extract strings from javascript source files
+
+SYNOPSIS
+\tnpx get-strings [OPTION...] FILE...
+
+OPTIONS
+\t--json
+\t\toutput in JSON format
+\t--jsonl
+\t\toutput in JSON lines format`);
+  process.exit(exitCode);
+}
+
 const { readFileSync } = require('node:fs');
 const { extname } = require('node:path');
 
@@ -15,6 +30,9 @@ if(files[0] === '--json') {
   outputFormat = 'json-lines';
   files.shift();
 }
+
+if(!files.length) usage(1);
+if(['--help', '--usage'].includes(files[0])) usage();
 
 if(outputFormat === 'json') {
   const strings = files.flatMap(stringsFromFile);
