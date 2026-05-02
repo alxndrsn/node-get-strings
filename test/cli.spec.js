@@ -5,10 +5,13 @@ const { assert } = require('chai');
 const simpleJsStrings = [
   './something',
   'a string',
+  '${x}${y}',
   'a',
   'b',
   'c',
   'astring',
+  '\n    Hi ${n}\n  ',
+  '',
 ];
 
 describe('get-strings', () => {
