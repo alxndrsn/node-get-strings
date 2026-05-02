@@ -59,4 +59,42 @@ Failed with file: ./test/examples/non-existent.coffee
 `);
     }
   });
+
+  describe('output format: JSON lines', () => {
+    it('should extract strings from a .js file', () => {
+      // when
+      const raw = execSync(`npx . --jsonl ./test/examples/simple.js`)
+          .toString();
+
+      // then
+      assert.equal(raw.at(-1), '\n');
+
+      // when
+      const actual = raw
+          .split('\n')
+          .filter(it => it)
+          .map(line => JSON.parse(line));
+
+      // then
+      assert.deepEqual(actual, simpleJsStrings);
+    });
+  });
+
+  it('should provide helpful usage instructions for a .coffee file', () => {
+    try {
+      // when
+      execSync('npx . ./test/examples/non-existent.coffee');
+
+      assert.fail('should have returned non-zero exit code');
+    } catch(err) {
+      // expect
+      assert.equal(err.stdout.toString(), `
+Failed with file: ./test/examples/non-existent.coffee
+
+.coffee not supported; try:
+
+  get-strings <(npx coffee -c "./test/examples/non-existent.coffee")
+`);
+    }
+  });
 });
