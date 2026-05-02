@@ -1,0 +1,17 @@
+#!/bin/bash -eu
+set -o pipefail
+
+log() { echo >&2 "[release] $*"; }
+
+# TODO check on master branch
+# TODO check working copy clean
+# TODO check up-to-date with remote repo
+
+npm version minor
+git add package.json
+newVersion="$(jq .version package.json)"
+git commit -m"Bumped version to $newVersion"
+git tag "v$newVersion"
+git push --tags
+git push
+npm publish
