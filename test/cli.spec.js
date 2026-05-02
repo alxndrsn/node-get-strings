@@ -15,6 +15,11 @@ const simpleJsStrings = [
 ];
 
 describe('get-strings', () => {
+  before(function() {
+    this.timeout(10_000);
+    execSync(`npx --yes . ${__filename}`);
+  });
+
   describe('output format: null-terminated strings', () => {
     it('should extract strings from a .js file', () => {
       // when
