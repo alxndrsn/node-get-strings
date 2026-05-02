@@ -7,7 +7,7 @@ log() { echo >&2 "[release] $*"; }
 # TODO check up-to-date with remote repo
 
 log "Bumping version number..."
-npm version minor -m "Bumped version to $newVersion"
+npm version minor -m "Release v%s"
 
 log "Pushing to git..."
 git push --tags
