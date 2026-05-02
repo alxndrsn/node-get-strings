@@ -11,11 +11,18 @@ let outputFormat;
 if(files[0] === '--json') {
   outputFormat = 'json';
   files.shift();
+} else if(files[0] === '--jsonl') {
+  outputFormat = 'json-lines';
+  files.shift();
 }
 
 if(outputFormat === 'json') {
   const strings = files.flatMap(stringsFromFile);
   console.log(JSON.stringify(strings, null, 2));
+} else if(outputFormat === 'json-lines') {
+  for(const f of files) {
+    for(const s of stringsFromFile(f)) process.stdout.write(JSON.stringify(s) + '\n');
+  }
 } else {
   let hasPrevious;
   for(const f of files) {
