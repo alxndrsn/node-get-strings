@@ -1,0 +1,19 @@
+#!/bin/bash -eu
+set -o pipefail
+
+log() { echo >&2 "[release] $*"; }
+
+# TODO check on master branch
+# TODO check up-to-date with remote repo
+
+log "Bumping version number..."
+npm version minor -m "Release v%s"
+
+log "Pushing to git..."
+git push --tags
+git push
+
+log "Publishing to npm..."
+npm publish
+
+log "Completed OK."
