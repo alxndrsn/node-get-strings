@@ -8,10 +8,12 @@ SYNOPSIS
 \tnpx get-strings [OPTION...] FILE...
 
 OPTIONS
-\t--json
+\t--json, -j
 \t\toutput in JSON format
-\t--jsonl
-\t\toutput in JSON lines format`);
+\t--jsonl, -l
+\t\toutput in JSON lines format (default)
+\t--null, -0
+\t\toutput in null-terminated string format`);
   process.exit(exitCode);
 }
 
@@ -22,13 +24,22 @@ const { getStrings } = require('./src');
 
 const [,,...files] = process.argv;
 
-let outputFormat;
-if(files[0] === '--json') {
-  outputFormat = 'json';
-  files.shift();
-} else if(files[0] === '--jsonl') {
-  outputFormat = 'json-lines';
-  files.shift();
+const outputFormat = readOutputFormat();
+function readOutputFormat() {
+  switch(files[0]) {
+    case '--null':
+    case '-0':
+      return files.shift() && 'null-terminated';
+    case '--json':
+    case '-j':
+      return files.shift() && 'json';
+    case '--jsonl':
+    case '-l':
+      files.shift();
+      // falls through:
+    default:
+      return 'json-lines';
+  }
 }
 
 if(!files.length) usage(1);
