@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const { Transform } = require('node:stream');
+
 function usage(exitCode) {
   console.log(`NAME
 \tget-strings - extract strings from javascript source files
@@ -20,7 +22,7 @@ OPTIONS
 const { readFileSync } = require('node:fs');
 const { extname } = require('node:path');
 
-const { getStrings } = require('./src');
+const { getStrings, streamStrings } = require('./src');
 
 const [,,...files] = process.argv;
 
@@ -49,9 +51,18 @@ if(outputFormat === 'json') {
   const strings = files.flatMap(stringsFromFile);
   console.log(JSON.stringify(strings, null, 2));
 } else if(outputFormat === 'json-lines') {
-  for(const f of files) {
-    for(const s of stringsFromFile(f)) process.stdout.write(JSON.stringify(s) + '\n');
-  }
+  const outstream = new Transform({
+    writeableObjectMode: true,
+    transform(chunk, encoding, callback) {
+      try {
+        callback(null, JSON.stringify(chunk.toString()) + '\n');
+      } catch(err) {
+        callback(err);
+      }
+    },
+  });
+  outstream.pipe(process.stdout);
+  for(const f of files) streamStrings(readSourceFile(f), outstream);
 } else {
   let hasPrevious;
   for(const f of files) {
@@ -63,9 +74,9 @@ if(outputFormat === 'json') {
   }
 }
 
-function stringsFromFile(f) {
+function readSourceFile(f) {
   switch(extname(f)) {
-    case '.js': return getStrings(readFileSync(f));
+    case '.js': return readFileSync(f);
     case '.coffee': return fatal(`
 Failed with file: ${f}
 
@@ -74,6 +85,10 @@ Failed with file: ${f}
   get-strings <(npx coffee -c "${f}")`);
     default: throw new Error(`Unrecognised extension for file '${f}'`);
   }
+}
+
+function stringsFromFile(f) {
+  return getStrings(readSourceFile(f));
 }
 
 function fatal(message) {
