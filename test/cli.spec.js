@@ -2,16 +2,21 @@ const { execSync } = require('node:child_process');
 
 const { assert } = require('chai');
 
-const simpleJsStrings = [
-  './something',
-  'a string',
-  '${x}${y}',
-  'a',
-  'b',
-  'c',
-  'astring',
-  '\n    Hi ${n}\n  ',
-  '',
+const expectedFileContents = [
+  [
+    './something',
+    'a string',
+    '${x}${y}',
+    'a',
+    'b',
+    'c',
+    'astring',
+    '\n    Hi ${n}\n  ',
+    '',
+  ],
+  [
+    'another file',
+  ],
 ];
 
 describe('get-strings', () => {
@@ -45,12 +50,12 @@ describe('get-strings', () => {
       describe(flag, () => {
         it('should extract strings from a .js file', () => {
           // when
-          const actual = execSync(`npx . ${flag} ./test/examples/simple.js`)
+          const actual = execSync(`npx . ${flag} ./test/examples/0.js`)
               .toString()
               .split('\0');
 
           // expect
-          assert.deepEqual(actual, simpleJsStrings);
+          assert.deepEqual(actual, expectedFileContents[0]);
         });
       });
     });
@@ -64,10 +69,10 @@ describe('get-strings', () => {
       describe(flag, () => {
         it('should extract strings from a .js file', () => {
           // when
-          const actual = JSON.parse(execSync(`npx . ${flag} ./test/examples/simple.js`).toString());
+          const actual = JSON.parse(execSync(`npx . ${flag} ./test/examples/0.js`).toString());
 
           // expect
-          assert.deepEqual(actual, simpleJsStrings);
+          assert.deepEqual(actual, expectedFileContents[0]);
         });
       });
     });
@@ -82,7 +87,7 @@ describe('get-strings', () => {
       describe(flag, () => {
         it('should extract strings from a .js file', () => {
           // when
-          const raw = execSync(`npx . ${flag} ./test/examples/simple.js`)
+          const raw = execSync(`npx . ${flag} ./test/examples/0.js`)
               .toString();
 
           // then
@@ -95,10 +100,32 @@ describe('get-strings', () => {
               .map(line => JSON.parse(line));
 
           // then
-          assert.deepEqual(actual, simpleJsStrings);
+          assert.deepEqual(actual, expectedFileContents[0]);
         });
       });
     });
+  });
+
+  it('should support multiple input files', () => {
+    // when
+    const raw = execSync(`npx . ./test/examples/0.js ./test/examples/1.js ./test/examples/0.js`)
+        .toString();
+
+    // then
+    assert.equal(raw.at(-1), '\n');
+
+    // when
+    const actual = raw
+        .split('\n')
+        .filter(it => it)
+        .map(line => JSON.parse(line));
+
+    // then
+    assert.deepEqual(actual, [
+      ...expectedFileContents[0],
+      ...expectedFileContents[1],
+      ...expectedFileContents[0],
+    ]);
   });
 
   it('should provide helpful usage instructions for a .coffee file', () => {
