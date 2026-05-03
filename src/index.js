@@ -3,30 +3,25 @@ module.exports = { getStrings, streamStrings };
 const acorn = require('acorn');
 const walk = require('acorn-walk');
 
-function getStrings(src) {
-  const strings = [];
-
-  walk.simple(acorn.parse(src, { ecmaVersion:'latest' }), {
+function collectStrings(src, collect) {
+  return walk.simple(acorn.parse(src, { ecmaVersion:'latest' }), {
     Literal(node) {
-      fromLiteral(node, str => strings.push(str));
+      fromLiteral(node, collect);
     },
     TemplateLiteral(node) {
-      strings.push(fromTemplateLiteral(node));
+      fromTemplateLiteral(node, collect);
     },
   });
+}
 
+function getStrings(src) {
+  const strings = [];
+  collectStrings(src, str => strings.push(str));
   return strings;
 }
 
 function streamStrings(src, target) {
-  walk.simple(acorn.parse(src, { ecmaVersion:'latest' }), {
-    Literal(node) {
-      fromLiteral(node, str => target.write(str));
-    },
-    TemplateLiteral(node) {
-      target.write(fromTemplateLiteral(node));
-    },
-  });
+  collectStrings(src, str => target.write(str));
 }
 
 function fromLiteral(node, fn) {
@@ -34,7 +29,7 @@ function fromLiteral(node, fn) {
   if(typeof value === 'string') fn(value);
 }
 
-function fromTemplateLiteral(node) {
+function fromTemplateLiteral(node, fn) {
   const { expressions, quasis } = node;
 
   const parts = [ quasis[0].value.raw ];
@@ -43,5 +38,5 @@ function fromTemplateLiteral(node) {
     quasis[i+1].value.raw,
   );
 
-  return parts.join('');
+  fn(parts.join(''));
 }
