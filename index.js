@@ -62,7 +62,7 @@ if(outputFormat === 'json') {
     },
   });
   outstream.pipe(process.stdout);
-  for(const f of files) streamStrings(readFileSync(f), outstream);
+  for(const f of files) streamStrings(readSourceFile(f), outstream);
 } else {
   let hasPrevious;
   for(const f of files) {
@@ -74,9 +74,9 @@ if(outputFormat === 'json') {
   }
 }
 
-function stringsFromFile(f) {
+function readSourceFile(f) {
   switch(extname(f)) {
-    case '.js': return getStrings(readFileSync(f));
+    case '.js': return readFileSync(f);
     case '.coffee': return fatal(`
 Failed with file: ${f}
 
@@ -85,6 +85,10 @@ Failed with file: ${f}
   get-strings <(npx coffee -c "${f}")`);
     default: throw new Error(`Unrecognised extension for file '${f}'`);
   }
+}
+
+function stringsFromFile(f) {
+  return getStrings(readSourceFile(f));
 }
 
 function fatal(message) {
