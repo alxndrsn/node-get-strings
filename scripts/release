@@ -21,6 +21,9 @@ case "${1-}" in
   *)      usage && exit 1 ;;
 esac
 
+log "Checking npm auth status..."
+npm whoami || npm login
+
 log "Bumping version number..."
 npm version "$level" -m "Release v%s"
 
