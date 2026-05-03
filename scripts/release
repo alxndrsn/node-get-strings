@@ -6,8 +6,23 @@ log() { echo >&2 "[release] $*"; }
 # TODO check on master branch
 # TODO check up-to-date with remote repo
 
+usage() {
+  cat <<EOF
+    USAGE
+      $0 [major|minor|patch]
+EOF
+}
+
+case "${1-}" in
+  major) level="$1" ;;
+  minor) level="$1" ;;
+  patch) level="$1" ;;
+  --help) usage && exit 0 ;;
+  *)      usage && exit 1 ;;
+esac
+
 log "Bumping version number..."
-npm version minor -m "Release v%s"
+npm version "$level" -m "Release v%s"
 
 log "Pushing to git..."
 git push --tags
