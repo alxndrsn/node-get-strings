@@ -21,6 +21,10 @@ case "${1-}" in
   *)      usage && exit 1 ;;
 esac
 
+log "Testing code before starting release process..."
+yarn
+yarn test
+
 log "Checking npm auth status..."
 npm whoami || npm login
 
